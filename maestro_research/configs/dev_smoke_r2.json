@@ -1,0 +1,51 @@
+{
+  "manifest_id": "libero-dev-smoke-r2",
+  "created": "2026-11-08",
+  "purpose": "Integration smoke: 3 predeclared development tasks across distinct LIBERO suites, 5 official initial states each. Not a generalization estimate.",
+  "benchmark": {
+    "name": "LIBERO",
+    "repo": "https://github.com/Lifelong-Robot-Learning/LIBERO",
+    "commit": "8f1084e3132a39270c3a13ebe37270a43ece2a01",
+    "robosuite": "1.4.0",
+    "mujoco": "2.3.7",
+    "robot": "Panda",
+    "controller": "OSC_POSE",
+    "control_hz": 20,
+    "action_dim": 7,
+    "action_semantics": "[dx, dy, dz, dax, day, daz, gripper] normalized deltas; gripper -1 open, +1 close",
+    "camera": "agentview",
+    "protocol_reference": "https://github.com/moojink/openvla-oft/blob/e4287e94541f459edc4feabc4e181f537cd569a8/experiments/robot/libero/run_libero_eval.py",
+    "task_max_steps": {
+      "libero_spatial": 220,
+      "libero_object": 280,
+      "libero_goal": 300
+    },
+    "num_steps_wait": 10
+  },
+  "tasks": [
+    {
+      "task_id": "object_alphabet_soup",
+      "suite": "libero_object",
+      "task": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+      "language": "Pick the alphabet soup and place it in the basket",
+      "initial_state_indices": [0, 1, 2, 3, 4],
+      "split": "development"
+    },
+    {
+      "task_id": "spatial_black_bowl_center",
+      "suite": "libero_spatial",
+      "task": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate",
+      "language": "Pick the akita black bowl from table center and place it on the plate",
+      "initial_state_indices": [0, 1, 2, 3, 4],
+      "split": "development"
+    },
+    {
+      "task_id": "goal_bowl_on_plate",
+      "suite": "libero_goal",
+      "task": "put_the_bowl_on_the_plate",
+      "language": "Put the bowl on the plate",
+      "initial_state_indices": [0, 1, 2, 3, 4],
+      "split": "development"
+    }
+  ]
+}
