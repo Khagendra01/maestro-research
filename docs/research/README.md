@@ -21,6 +21,9 @@ It is separate from the upstream MAESTRO release; the harness lives in
 6. [`13_OPENVLA_OFT_REFERENCE.md`](13_OPENVLA_OFT_REFERENCE.md) — OpenVLA-OFT 7B
    learned-policy reference on the same 15 episodes: **15/15** (object 5/5,
    spatial 5/5, goal 5/5), with policy/sim timing and environment provenance.
+7. [`14_OPENVLA_OFT_FULL_SUITE_RESULTS.md`](14_OPENVLA_OFT_FULL_SUITE_RESULTS.md) —
+   full LIBERO Spatial/Object/Goal reference, one evaluation seed: **1471/1500**
+   official successes (98.07%).
 
 ## Status at a glance
 
@@ -29,7 +32,7 @@ It is separate from the upstream MAESTRO release; the harness lives in
 | Oracle geometry + planning + execution | 15/15 (Setting C; planning isolation only) |
 | Scripted RGB-D perception | implemented; negative probe (Setting B) |
 | VLM semantic selector (Meta Muse Spark) | implemented and run; 15/45 over 3 repeats (Setting B) |
-| OpenVLA-OFT 7B learned-policy reference | **15/15** on the frozen 15 episodes (Setting A; A100) |
+| OpenVLA-OFT 7B learned-policy reference | **15/15** on the frozen 15 episodes and **1471/1500** on the full Spatial/Object/Goal suite, one eval seed (Setting A; A100) |
 | cuRobo baseline | blocked: no CUDA/Docker locally; no baseline service |
 | Learned-policy + modular on the same interface | both run on the same tasks/initial states; **API unification is still open** (OFT uses its own eval loop) |
 
@@ -48,6 +51,7 @@ modal run maestro_research/modal_libero.py::run_smoke --settings oracle --limit 
 modal run maestro_research/modal_libero.py::run_smoke --settings vlm --limit 5 --run-name dev_vlm_repeat   # needs meta-model-api secret
 modal run maestro_research/modal_oft.py::download_checkpoints
 modal run maestro_research/modal_oft.py::run_oft_smoke --limit 5 --run-name dev_oft_r1
+modal run maestro_research/modal_oft.py::run_oft_smoke --limit 50 --full-suite --run-name dev_oft_full_r1
 ```
 
 The VLM secret is `meta-model-api` (`MODEL_API_KEY`); it is not stored in the

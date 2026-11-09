@@ -3,11 +3,13 @@
 Date: 2026-11-09. Result: **15/15 official successes** (object 5/5, spatial
 5/5, goal 5/5). This is the learned-policy reference on the same 15 declared
 episodes as the modular oracle and VLM runs. It is a Setting A policy (RGB +
-wrist RGB + proprioception; no depth, no simulator poses).
+wrist RGB + proprioception; no depth, no simulator poses). For the later
+full-suite evaluation, see
+[`14_OPENVLA_OFT_FULL_SUITE_RESULTS.md`](14_OPENVLA_OFT_FULL_SUITE_RESULTS.md).
 
 ## Provenance and setup
 
-- Policy: OpenVLA-OFT 7B, **task-specific** checkpoints
+- Policy: OpenVLA-OFT 7B, **suite-specific** checkpoints
   `moojink/openvla-7b-oft-finetuned-libero-{spatial,object,goal}`. The combined
   `spatial-object-goal-10` checkpoint was not run.
 - Code: OpenVLA-OFT `e4287e94541f459edc4feabc4e181f537cd569a8` (the same commit
@@ -107,7 +109,7 @@ loop. The VLM selector is not a visuomotor policy.
 - robosuite 1.4.1 (OFT's official requirement) vs 1.4.0 in the frozen modular
   manifest. The LIBERO commit, tasks, initial-state indices and official
   success condition are the same. Disclosed rather than silently mixed.
-- The reference's task-specific checkpoints were used, not the combined
+- The reference's suite-specific checkpoints were used, not the combined
   `spatial-object-goal-10` checkpoint.
 - The OFT image was built from PyPI/git dependencies at run time; pins that
   mattered (`protobuf`, `tensorflow-metadata`, `robosuite`, MuJoCo) are listed

@@ -84,6 +84,9 @@ def run_reference(
     out_dir: str,
     limit_per_task: int = 5,
     seed: int = 7,
+    full_suite: bool = False,
+    num_states: int = 50,
+    commit_fn=None,
 ) -> Dict[str, Any]:
     import torch
 
@@ -112,15 +115,18 @@ def run_reference(
     eval_mod.get_action = timed_get_action
 
     benchmark_dict = benchmark.get_benchmark_dict()
-    suites: List[str] = []
-    for task in manifest["tasks"]:
-        if task["suite"] not in suites:
-            suites.append(task["suite"])
+    if full_suite:
+        suites = ["libero_spatial", "libero_object", "libero_goal"]
+    else:
+        suites = []
+        for task in manifest["tasks"]:
+            if task["suite"] not in suites:
+                suites.append(task["suite"])
 
     records: List[Dict[str, Any]] = []
     summary: Dict[str, Any] = {
         "reference": "OpenVLA-OFT",
-        "manifest_id": manifest["manifest_id"],
+        "manifest_id": "libero_full_suite" if full_suite else manifest["manifest_id"],
         "manifest_sha256": None,
         "checkpoints": CHECKPOINTS,
         "num_actions_chunk": int(NUM_ACTIONS_CHUNK),
@@ -129,7 +135,6 @@ def run_reference(
     }
 
     for suite in suites:
-        tasks = [t for t in manifest["tasks"] if t["suite"] == suite]
         checkpoint = CHECKPOINTS[suite]
         if not Path(checkpoint).is_dir():
             raise FileNotFoundError(f"missing checkpoint directory {checkpoint}")
@@ -153,6 +158,18 @@ def run_reference(
         summary.setdefault("model_load_seconds", {})[suite] = load_seconds
 
         bench = benchmark_dict[suite]()
+        if full_suite:
+            tasks = [
+                {
+                    "task_id": f"{suite}_task{index:02d}",
+                    "task": task.name,
+                    "language": task.language,
+                    "initial_state_indices": list(range(num_states)),
+                }
+                for index, task in enumerate(bench.tasks)
+            ]
+        else:
+            tasks = [t for t in manifest["tasks"] if t["suite"] == suite]
         for task_spec in tasks:
             task_id = _task_id(bench, task_spec["task"])
             task = bench.get_task(task_id)
@@ -206,12 +223,17 @@ def run_reference(
                     f"steps={steps} wall={wall_seconds:.1f}s policy={policy_seconds:.1f}s",
                     flush=True,
                 )
-                (out / "episodes.jsonl").open("a").write(json.dumps(record) + "\n")
+                with (out / "episodes.jsonl").open("a") as handle:
+                    handle.write(json.dumps(record) + "\n")
+                if commit_fn is not None and len(records) % 100 == 0:
+                    commit_fn()
             try:
                 env.close()
             except Exception:
                 pass
 
+        if commit_fn is not None:
+            commit_fn()
         del model, action_head, proprio_projector, processor
         gc.collect()
         if torch.cuda.is_available():
@@ -232,8 +254,12 @@ def run_reference(
             "successes": successes,
             "success_rate": successes / total if total else 0.0,
             "by_suite": by_suite,
+            "full_suite": full_suite,
+            "num_states": num_states,
             "records": records,
         }
     )
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
+    if commit_fn is not None:
+        commit_fn()
     return summary

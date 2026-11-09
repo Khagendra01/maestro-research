@@ -169,8 +169,8 @@ def probe_oft(gl: str = "egl") -> dict:
     return result
 
 
-@app.function(image=oft_image, volumes={"/data": volume}, gpu="A100", timeout=14400)
-def run_oft_smoke(limit: int = 5, run_name: str = "", gl: str = "egl") -> dict:
+@app.function(image=oft_image, volumes={"/data": volume}, gpu="A100", timeout=86400)
+def run_oft_smoke(limit: int = 5, run_name: str = "", gl: str = "egl", full_suite: bool = False) -> dict:
     import os
 
     os.environ["MUJOCO_GL"] = gl
@@ -184,6 +184,9 @@ def run_oft_smoke(limit: int = 5, run_name: str = "", gl: str = "egl") -> dict:
         out_dir=out,
         limit_per_task=limit,
         seed=7,
+        full_suite=full_suite,
+        num_states=limit if full_suite else 50,
+        commit_fn=volume.commit,
     )
     summary["out"] = out
     summary["gl"] = gl
