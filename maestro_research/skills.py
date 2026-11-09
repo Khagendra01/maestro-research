@@ -298,8 +298,8 @@ class StagedExecutor:
                 self._hold(backend, cfg.gripper_open, cfg.settle_steps, max_steps)
                 continue
 
-            positions = backend.oracle_positions()
-            grasp_z_before = float(np.asarray(positions[target_id], dtype=np.float64)[2])
+            current_positions = dict(scene_positions) if scene_positions is not None else backend.oracle_positions()
+            grasp_z_before = float(np.asarray(current_positions[target_id], dtype=np.float64)[2])
             lift_target = candidate.grasp_pose[:3, 3] + np.array([0.0, 0.0, cfg.lift_height])
             with timed(logger, "test_lift"):
                 ok, err, reason = self._move(
@@ -393,6 +393,9 @@ class StagedExecutor:
             ),
             official=backend.official_success(),
         )
+        if placed is None:
+            return EpisodeOutcome("ok", "placement_unverifiable_non_oracle", None, int(backend.step_count),
+                                  stage_errors, attempts)
         if placed:
             return EpisodeOutcome("ok", "internal_placement_verified", True, int(backend.step_count),
                                   stage_errors, attempts)

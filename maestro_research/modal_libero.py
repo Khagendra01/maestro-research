@@ -67,7 +67,7 @@ def _manifest_text() -> str:
     return path.read_text()
 
 
-@app.function(image=image, volumes={"/data": volume}, cpu=8, memory=16384, timeout=7200)
+@app.function(image=image, volumes={"/data": volume}, secrets=[modal.Secret.from_name("meta-model-api")], cpu=8, memory=16384, timeout=7200)
 def smoke(
     settings: str = "oracle",
     limit: int = 5,
@@ -121,6 +121,7 @@ def smoke(
                     "stage_errors",
                     "target_id",
                     "receptacle_id",
+                    "vlm",
                 )
             }
             for record in summary["records"]
@@ -184,6 +185,40 @@ def rgbd_probe(
         ],
         "oracle": {k: v.tolist() for k, v in backend.oracle_positions().items()},
     }
+
+
+@app.function(image=image, volumes={"/data": volume}, cpu=8, memory=16384, timeout=3600)
+def pixel_probe(
+    suite: str = "libero_spatial",
+    task: str = "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate",
+    state: int = 0,
+) -> dict:
+    from types import SimpleNamespace
+
+    import numpy as np
+
+    from maestro_research.backends.libero import LiberoBackend
+
+    spec = SimpleNamespace(suite=suite, task=task, task_id="probe", language="")
+    backend = LiberoBackend(resolution=256, enable_depth=True)
+    obs = backend.reset(spec, state)
+    points = backend.pointcloud(obs)
+    h, w = points.shape[:2]
+    oracle = backend.oracle_positions()
+    samples = {"target": (0.52, 0.42), "receptacle": (0.75, 0.27)}
+    out = {}
+    for name, (xn, yn) in samples.items():
+        col = int(round(xn * (w - 1)))
+        row_top = int(round(yn * (h - 1)))
+        entry = {"col": col, "row_top": row_top}
+        for label, row in (("top_left", row_top), ("bottom_left", h - 1 - row_top)):
+            pt = points[row, col]
+            nearest = min(
+                (float(np.linalg.norm(pt - p)), k) for k, p in oracle.items()
+            )
+            entry[label] = {"xyz": pt.tolist(), "nearest": nearest}
+        out[name] = entry
+    return out
 
 
 @app.function(image=image, volumes={"/data": volume}, cpu=8, memory=16384, timeout=3600)
@@ -376,6 +411,15 @@ def run_probe(
 ):
     report = probe.remote(suite=suite, task=task, state=state, grasp_probe=grasp_probe, action_probe=action_probe)
     print(json.dumps(report, indent=2, default=_jsonable))
+
+
+@app.local_entrypoint()
+def run_pixel_probe(
+    suite: str = "libero_spatial",
+    task: str = "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate",
+    state: int = 0,
+):
+    print(json.dumps(pixel_probe.remote(suite=suite, task=task, state=state), indent=2, default=_jsonable))
 
 
 @app.local_entrypoint()

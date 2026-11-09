@@ -70,7 +70,7 @@ def _backend(name: str, resolution: int, settings: str, convention: str = "botto
     if name == "libero":
         from .backends.libero import LiberoBackend
 
-        return LiberoBackend(resolution=resolution, convention=convention, enable_depth=(settings in ("rgbd", "oracle")))
+        return LiberoBackend(resolution=resolution, convention=convention, enable_depth=(settings in ("rgbd", "oracle", "vlm")))
     raise ValueError(f"unknown backend {name!r}")
 
 
@@ -154,7 +154,7 @@ def main(argv=None) -> int:
         p = sub.add_parser(name)
         p.add_argument("--config", required=True, help="pinned manifest JSON")
         p.add_argument("--backend", default="dryrun", choices=("dryrun", "libero"))
-        p.add_argument("--settings", default="oracle", choices=("oracle", "rgbd"))
+        p.add_argument("--settings", default="oracle", choices=("oracle", "rgbd", "vlm"))
         p.add_argument("--out", default=None)
         p.add_argument("--resolution", type=int, default=256)
         p.add_argument("--convention", default="bottom_left", choices=("bottom_left", "top_left"))

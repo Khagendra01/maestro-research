@@ -89,6 +89,15 @@ def run_episode(
             table_center = backend.table_center()
             decision = ScriptedSelector(positions, table_center).decide(episode.task.language)
             selector_kind = "scripted_oracle_control"
+        elif settings == "vlm":
+            from .perception.vlm import build_scene_from_vlm
+
+            scene = build_scene_from_vlm(observation, backend, episode.task.language)
+            scene_positions = scene["positions"]
+            scene_extents = scene["extents"]
+            decision = scene["decision"]
+            selector_kind = "meta_muse_spark_contributor"
+            record["vlm"] = scene["metadata"]
         elif settings == "rgbd":
             from .perception.localize import build_scene_from_rgbd
 
