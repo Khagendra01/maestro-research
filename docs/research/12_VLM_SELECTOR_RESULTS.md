@@ -164,9 +164,11 @@ Artifacts on volume `maestro-research-data`: `/data/runs/<run-name>-vlm/`
 
 ## What this does not establish
 
-- It is not a learned-policy reference. The OpenVLA-OFT 7B reference required by
-  the first milestone has not been run (needs the OFT repo, 7B LIBERO
-  checkpoints, and a Modal A100 run). No learned-policy number exists yet.
+- It is not a learned-policy reference. The OpenVLA-OFT 7B reference is a
+  separate Setting A run and is reported in
+  [`13_OPENVLA_OFT_REFERENCE.md`](13_OPENVLA_OFT_REFERENCE.md): **15/15** on the
+  same 15 episodes. That reference is not the VLM selector; the VLM selector is
+  a grounding module, not a visuomotor policy.
 - It is not a Setting A result (depth is used) and not a leaderboard comparison.
 - n=45 over three repeats of the same 15 states; no confidence interval or
   per-initial-state generalization claim.
